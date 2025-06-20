@@ -117,7 +117,7 @@
     <main class="pt-24 pb-16">
         <!-- 欢迎部分 -->
         <section id="home" class="min-h-[80vh] flex flex-col items-center justify-center px-6 relative overflow-hidden">
-            <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1068/1920/1080')] bg-cover bg-center opacity-20"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-20"></div>
             <div class="relative z-10 text-center">
                 <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold text-dark mb-6 animate-fade-in text-shadow-lg">
                     <span class="text-primary">生日快乐</span>，<span class="text-secondary">我的朋友</span>！
@@ -202,7 +202,8 @@
                     </p>
                     <div class="mt-8 text-right">
                         <p class="font-bold text-dark">永远支持你的朋友</p>
-                    </div>
+              
+                    </button>
                 </div>
             </div>
         </section>
@@ -234,8 +235,8 @@
                             </div>
                         </div>
                         <div>
-                            <label for="message" class="block text-gray-700 font-medium mb-2">生日祝福</label>
-                            <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" placeholder="写下你对TA的生日祝福..." required></textarea>
+                            <label for="message-text" class="block text-gray-700 font-medium mb-2">生日祝福</label>
+                            <textarea id="message-text" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" placeholder="写下你对TA的生日祝福..." required></textarea>
                         </div>
                         <div class="text-right">
                             <button type="submit" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">
@@ -246,7 +247,7 @@
                 </div>
                 
                 <div id="messages-container" class="space-y-6">
-                    
+                  
                         </p>
                     </div>
                 </div>
@@ -338,13 +339,14 @@
             });
         });
         
-        // 留言表单提交
+        // 留言表单提交 - 修复版本
         document.getElementById('message-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const name = document.getElementById('name').value;
             const relationship = document.getElementById('relationship').value;
-            const message = document.getElementById('message').value;
+            // 修复：将变量名从message改为messageText避免冲突
+            const messageText = document.getElementById('message-text').value;
             
             // 创建新留言元素
             const newMessage = document.createElement('div');
@@ -366,7 +368,7 @@
                     relationshipText = '其他';
             }
             
-            // 设置留言内容
+            // 设置留言内容 - 使用正确的变量messageText
             newMessage.innerHTML = `
                 <div class="flex items-center mb-4">
                     <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
@@ -378,7 +380,7 @@
                     </div>
                 </div>
                 <p class="text-gray-700 leading-relaxed">
-                    ${message}
+                    ${messageText}
                 </p>
             `;
             
@@ -390,7 +392,14 @@
             this.reset();
             
             // 显示成功提示
-            alert('祝福已发送！');
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slide-up z-50';
+            toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> 祝福已发送！';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         });
         
         // 烟花效果
@@ -430,33 +439,33 @@
         setInterval(createFirework, 1000);
         
         // 生日倒计时
-        function updateCountdown() {
-            // 设置下一个生日日期（2025年6月21日0点0分0秒）
-            const today = new Date();
-            const nextBirthday = new Date(2025, 5, 21, 0, 0, 0); // 月份是从0开始的，所以5代表6月
-            
-            const diffTime = nextBirthday - today;
-            
-            // 计算剩余天数、小时、分钟和秒
-            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
-            
-            // 更新DOM
-            document.getElementById('days').innerText = days.toString().padStart(2, '0');
-            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
-            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
-            
-            // 如果生日已过或今天是生日，显示生日快乐信息
-            if (diffTime <= 0) {
-                document.getElementById('days').innerText = '00';
-                document.getElementById('hours').innerText = '00';
-                document.getElementById('minutes').innerText = '00';
-                document.getElementById('seconds').innerText = '00';
-            }
-        }
+function updateCountdown() {
+    // 设置下一个生日日期（2025年6月21日0点0分0秒）
+    const today = new Date();
+    const nextBirthday = new Date(2025, 5, 21, 0, 0, 0); // 月份是从0开始的，所以5代表6月
+    
+    const diffTime = nextBirthday - today;
+    
+    // 计算剩余天数、小时、分钟和秒
+    const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+    
+    // 更新DOM
+    document.getElementById('days').innerText = days.toString().padStart(2, '0');
+    document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+    document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+    document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+    
+    // 如果生日已过或今天是生日，显示生日快乐信息
+    if (diffTime <= 0) {
+        document.getElementById('days').innerText = '00';
+        document.getElementById('hours').innerText = '00';
+        document.getElementById('minutes').innerText = '00';
+        document.getElementById('seconds').innerText = '00';
+    }
+}
         
         // 初始化倒计时并每秒更新
         updateCountdown();
@@ -481,4 +490,3 @@
     </script>
 </body>
 </html>
-    
