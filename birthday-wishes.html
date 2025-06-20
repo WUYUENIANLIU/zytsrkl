@@ -1,577 +1,683 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>PocketBase 评论系统</title>
-    <style>
-        body {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: Arial, sans-serif;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祝我的朋友17岁生日快乐！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- 引入Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase配置 - 替换为您自己的配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9LbJ0FyH0f0fV3J4Xz5V3X0fV3J4Xz5V3",
+            authDomain: "birthday-wishes-12345.firebaseapp.com",
+            projectId: "birthday-wishes-12345",
+            storageBucket: "birthday-wishes-12345.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890abcdef"
+        };
+        
+        // 初始化Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#87CEEB',
+                        secondary: '#FFB6C1',
+                        accent: '#98FB98',
+                        dark: '#4A6FA5',
+                        light: '#F0F8FF',
+                        pink: '#FF69B4',
+                        purple: '#9370DB'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        cursive: ['"Comic Sans MS"', '"Marker Felt"', 'cursive']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'fade-in': 'fadeIn 1.5s ease-in-out',
+                        'slide-up': 'slideUp 1s ease-out',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' }
+                        }
+                    }
+                }
+            }
         }
-        .comment {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .comment-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .comment-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        .comment-author {
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        .comment-date {
-            color: #888;
-            font-size: 0.9em;
-        }
-        .comment-body {
-            margin-left: 50px;
-            margin-bottom: 10px;
-        }
-        .comment-reply {
-            margin-left: 50px;
-            padding-left: 20px;
-            border-left: 2px solid #eee;
-        }
-        .comment-form {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .comment-form input,
-        .comment-form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        .comment-form button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .comment-form button:hover {
-            background-color: #45a049;
-        }
-        .sort-options {
-            margin-bottom: 15px;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .pagination button {
-            padding: 8px 12px;
-            margin: 0 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .pagination button.active {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .auth-buttons {
-            margin-bottom: 15px;
-        }
-        .auth-buttons button {
-            padding: 8px 12px;
-            margin-right: 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .auth-modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .auth-modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 300px;
-            border-radius: 5px;
-        }
-        .auth-modal-close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .auth-modal-close:hover,
-        .auth-modal-close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            }
+            .bg-gradient-blue {
+                background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 100%);
+            }
+            .bg-glass {
+                background: rgba(255, 255, 255, 0.25);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .party-text {
+                background: linear-gradient(90deg, #ff69b4, #9370db, #87ceeb, #98fb98);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-size: 300% 300%;
+                animation: gradient 5s ease infinite;
+            }
+            @keyframes gradient {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            .confetti {
+                position: fixed;
+                width: 10px;
+                height: 10px;
+                background-color: #ff69b4;
+                animation: fall linear forwards;
+            }
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
         }
     </style>
-    <!-- 添加 PocketBase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.15.0/dist/pocketbase.umd.min.js"></script>
 </head>
-<body>
-    <div class="auth-buttons">
-        <button id="login-button">登录</button>
-        <button id="register-button">注册</button>
-        <span id="user-info"></span>
+<body class="bg-gradient-to-br from-pink-50 to-blue-50 min-h-screen overflow-x-hidden">
+    <!-- 顶部装饰 -->
+    <div class="fixed top-0 left-0 w-full h-16 bg-gradient-to-r from-primary/90 to-secondary/90 shadow-lg z-50 flex items-center justify-between px-6">
+        <div class="text-white text-2xl font-bold tracking-wider text-shadow animate-wiggle">
+            <i class="fa-solid fa-birthday-cake mr-2"></i>17岁生日快乐
+        </div>
+        <div class="hidden md:flex space-x-4">
+            <a href="#home" class="text-white hover:text-purple-200 transition-colors duration-300 text-shadow">首页</a>
+            <a href="#wishes" class="text-white hover:text-purple-200 transition-colors duration-300 text-shadow">生日祝福</a>
+            <a href="#message" class="text-white hover:text-purple-200 transition-colors duration-300 text-shadow">留言板</a>
+        </div>
+        <button class="md:hidden text-white text-xl" id="menu-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
     </div>
 
-    <div class="sort-options">
-        <label>排序方式: </label>
-        <select id="sort-select">
-            <option value="-created">最新</option>
-            <option value="created">最早</option>
-        </select>
-    </div>
-
-    <div id="comments-container"></div>
-    
-    <div id="comment-form" class="comment-form">
-        <h3>发表评论</h3>
-        <input type="text" id="user-name" placeholder="你的名字" disabled>
-        <textarea id="comment-text" rows="4" placeholder="写下你的评论..."></textarea>
-        <input type="hidden" id="reply-to" value="">
-        <button id="submit-comment">提交评论</button>
-    </div>
-
-    <!-- 登录模态框 -->
-    <div id="login-modal" class="auth-modal">
-        <div class="auth-modal-content">
-            <span class="auth-modal-close">&times;</span>
-            <h3>登录</h3>
-            <input type="email" id="login-email" placeholder="邮箱">
-            <input type="password" id="login-password" placeholder="密码">
-            <button id="do-login">登录</button>
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="fixed inset-0 bg-dark/95 z-50 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex justify-end p-6">
+            <button id="menu-close" class="text-white text-2xl">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="flex flex-col items-center justify-center h-full space-y-8 text-xl">
+            <a href="#home" class="text-white hover:text-secondary transition-colors duration-300 text-shadow-lg text-2xl">首页</a>
+            <a href="#wishes" class="text-white hover:text-secondary transition-colors duration-300 text-shadow-lg text-2xl">生日祝福</a>
+            <a href="#message" class="text-white hover:text-secondary transition-colors duration-300 text-shadow-lg text-2xl">留言板</a>
         </div>
     </div>
 
-    <!-- 注册模态框 -->
-    <div id="register-modal" class="auth-modal">
-        <div class="auth-modal-content">
-            <span class="auth-modal-close">&times;</span>
-            <h3>注册</h3>
-            <input type="email" id="register-email" placeholder="邮箱">
-            <input type="text" id="register-name" placeholder="用户名">
-            <input type="password" id="register-password" placeholder="密码">
-            <button id="do-register">注册</button>
-        </div>
-    </div>
+    <!-- 气球装饰 -->
+    <div class="fixed -top-10 -left-10 w-20 h-20 bg-primary rounded-full opacity-70 animate-float shadow-lg"></div>
+    <div class="fixed -top-5 -right-10 w-16 h-16 bg-secondary rounded-full opacity-70 animate-float" style="animation-delay: 0.5s"></div>
+    <div class="fixed top-20 -right-5 w-12 h-12 bg-accent rounded-full opacity-70 animate-float" style="animation-delay: 1s"></div>
+    <div class="fixed top-32 -left-8 w-14 h-14 bg-purple-400 rounded-full opacity-70 animate-float" style="animation-delay: 1.5s"></div>
 
-    <div class="pagination" id="pagination"></div>
+    <!-- 主要内容 -->
+    <main class="pt-24 pb-16">
+        <!-- 欢迎部分 -->
+        <section id="home" class="min-h-[90vh] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-10"></div>
+            <div class="relative z-10 text-center max-w-4xl">
+                <div class="bg-glass rounded-full px-6 py-2 mb-6 inline-block">
+                    <p class="text-pink-500 font-bold"><i class="fa-solid fa-star mr-2"></i>17岁生日快乐<i class="fa-solid fa-star ml-2"></i></p>
+                </div>
+                <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold mb-6 animate-fade-in text-shadow-lg party-text">
+                    亲爱的朋友，生日快乐！
+                </h1>
+                <p class="text-[clamp(1.2rem,3vw,1.8rem)] text-gray-700 max-w-3xl mx-auto mb-10 animate-slide-up">
+                    今天是你的17岁生日！🎉 愿你的每一天都充满阳光和欢笑，
+                    所有的梦想都能成真，所有的希望都能实现！
+                </p>
+                <div class="animate-bounce-slow">
+                    <a href="#wishes" class="inline-block bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">
+                        查看生日祝福 <i class="fa-solid fa-heart ml-2 animate-pulse"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-pink-50/80 to-transparent"></div>
+        </section>
+
+        <!-- 祝福部分 -->
+        <section id="wishes" class="py-20 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-4 party-text">
+                        <i class="fa-solid fa-star text-secondary animate-pulse-slow"></i> 生日祝福 <i class="fa-solid fa-star text-secondary animate-pulse-slow"></i>
+                    </h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 祝福卡片1 -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group border-2 border-primary/30">
+                        <div class="h-40 bg-gradient-to-br from-primary/20 to-purple-200 flex items-center justify-center">
+                            <i class="fa-solid fa-cake-candles text-6xl text-primary group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-3">青春永驻</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                17岁，如花般的年纪，愿你的青春永远美丽动人，充满活力和激情。
+                                未来的日子里，无论遇到什么困难，都要保持乐观向上的心态！
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 祝福卡片2 -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group border-2 border-secondary/30">
+                        <div class="h-40 bg-gradient-to-br from-secondary/20 to-pink-200 flex items-center justify-center">
+                            <i class="fa-solid fa-gift text-6xl text-secondary group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-3">梦想成真</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                愿你的17岁充满无限可能，所有的梦想都能在这个年纪种下种子，
+                                并在未来的日子里茁壮成长。坚持自己的理想，你一定能实现它们！
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 祝福卡片3 -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group border-2 border-accent/30">
+                        <div class="h-40 bg-gradient-to-br from-accent/20 to-green-200 flex items-center justify-center">
+                            <i class="fa-solid fa-heart text-6xl text-accent group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-3">幸福快乐</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                希望你的每一天都充满阳光和欢笑，身边永远有真心关爱你的朋友和家人。
+                                17岁，是人生中最美好的时光，尽情享受吧！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-16 bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl p-8 shadow-xl border border-purple-200">
+                    <h3 class="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">特别的你，特别的祝福</h3>
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="md:w-1/3 flex justify-center mb-6 md:mb-0">
+                            <div class="w-48 h-48 rounded-full bg-gradient-to-br from-pink-200 to-purple-300 flex items-center justify-center shadow-lg border-4 border-white">
+                                <i class="fa-solid fa-crown text-5xl text-yellow-400"></i>
+                            </div>
+                        </div>
+                        <div class="md:w-2/3">
+                            <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                                亲爱的朋友，今天是你17岁的生日。时间过得真快，仿佛昨天我们还在校园里一起追逐嬉戏，
+                                转眼间你已经步入了这个充满挑战和机遇的年纪。
+                            </p>
+                            <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                                17岁，是青春的绽放，是梦想的启航。在这个特别的日子里，我想对你说：
+                                无论未来的路有多远，无论遇到什么困难，我都会一直在你身边支持你。
+                            </p>
+                            <p class="text-lg text-gray-700 leading-relaxed">
+                                愿你的17岁充满无限的可能和惊喜，愿你的笑容永远灿烂，
+                                愿你的生活充满阳光和爱。生日快乐，我最亲爱的朋友！🎂🎁🎉
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-right">
+                        <p class="font-bold text-purple-600">永远支持你的朋友</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 留言板部分 -->
+        <section id="message" class="py-20 px-6 bg-gradient-to-b from-blue-50 to-pink-50">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-4 party-text">
+                        <i class="fa-solid fa-comments text-secondary animate-pulse-slow"></i> 留言板 <i class="fa-solid fa-comments text-secondary animate-pulse-slow"></i>
+                    </h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">写下你的祝福，让所有人都能看到！所有留言将实时同步到所有设备</p>
+                    <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full mt-4"></div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-12 border-2 border-purple-200">
+                    <h3 class="text-xl font-bold text-dark mb-6 text-center">留下你的祝福</h3>
+                    <form id="message-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-gray-700 font-medium mb-2">你的名字</label>
+                                <input type="text" id="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" placeholder="请输入你的名字" required>
+                            </div>
+                            <div>
+                                <label for="relationship" class="block text-gray-700 font-medium mb-2">你们的关系</label>
+                                <select id="relationship" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" required>
+                                    <option value="">请选择</option>
+                                    <option value="friend">好朋友</option>
+                                    <option value="classmate">同学</option>
+                                    <option value="family">家人</option>
+                                    <option value="other">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="message-text" class="block text-gray-700 font-medium mb-2">生日祝福</label>
+                            <textarea id="message-text" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" placeholder="写下你对TA的生日祝福..." required></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> 发送祝福
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="messages-container" class="space-y-6">
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin-slow text-primary text-4xl mb-4">
+                            <i class="fa-solid fa-spinner"></i>
+                        </div>
+                        <p class="text-gray-600">正在加载留言...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gradient-to-r from-purple-700 to-pink-600 text-white py-12 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">17岁生日快乐</h3>
+                    <p class="text-gray-200 leading-relaxed">
+                        这是一个专门为你创建的生日祝福网站，希望你能喜欢！
+                        愿你的17岁充满无限的可能和惊喜！
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">生日倒计时</h3>
+                    <div id="countdown" class="flex space-x-4 justify-center">
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="days">00</div>
+                            <div class="text-sm">天</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="hours">00</div>
+                            <div class="text-sm">时</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="minutes">00</div>
+                            <div class="text-sm">分</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="seconds">00</div>
+                            <div class="text-sm">秒</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">分享祝福</h3>
+                    <div class="flex space-x-4 justify-center">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/40 transition-colors duration-300">
+                            <i class="fa-brands fa-weixin text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/40 transition-colors duration-300">
+                            <i class="fa-brands fa-weibo text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/40 transition-colors duration-300">
+                            <i class="fa-brands fa-qq text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/40 transition-colors duration-300">
+                            <i class="fa-solid fa-envelope text-white"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-purple-500 pt-8 text-center text-gray-300">
+                <p>© 2025 生日祝福网站 | 为你特别定制 | 部署在GitHub Pages</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 烟花效果 -->
+    <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-40"></div>
 
     <script>
-        // 配置信息
-        const POCKETBASE_URL = 'http://127.0.0.1:8090';
+        // 移动端菜单控制
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('translate-x-full');
+        });
         
-        // 初始化 PocketBase 客户端
-        const pb = new PocketBase(POCKETBASE_URL);
+        document.getElementById('menu-close').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.add('translate-x-full');
+        });
         
-        // 分页和排序配置
-        let currentPage = 1;
-        let commentsPerPage = 10;
-        let sortField = '-created';
-        
-        // DOM 元素
-        const commentsContainer = document.getElementById('comments-container');
-        const userNameInput = document.getElementById('user-name');
-        const commentTextInput = document.getElementById('comment-text');
-        const submitButton = document.getElementById('submit-comment');
-        const replyToInput = document.getElementById('reply-to');
-        const sortSelect = document.getElementById('sort-select');
-        const paginationContainer = document.getElementById('pagination');
-        const loginButton = document.getElementById('login-button');
-        const registerButton = document.getElementById('register-button');
-        const userInfoSpan = document.getElementById('user-info');
-        const loginModal = document.getElementById('login-modal');
-        const registerModal = document.getElementById('register-modal');
-        const loginClose = document.querySelectorAll('.auth-modal-close')[0];
-        const registerClose = document.querySelectorAll('.auth-modal-close')[1];
-        const doLoginButton = document.getElementById('do-login');
-        const doRegisterButton = document.getElementById('do-register');
-        const loginEmail = document.getElementById('login-email');
-        const loginPassword = document.getElementById('login-password');
-        const registerEmail = document.getElementById('register-email');
-        const registerName = document.getElementById('register-name');
-        const registerPassword = document.getElementById('register-password');
-
-        // 检查用户是否已登录
-        async function checkAuth() {
-            if (pb.authStore.isValid) {
-                // 用户已登录
-                const user = pb.authStore.model;
-                userInfoSpan.textContent = `已登录: ${user.name} (${user.email})`;
-                userNameInput.value = user.name;
-                userNameInput.disabled = true;
-            } else {
-                // 用户未登录
-                userInfoSpan.textContent = '未登录';
-                userNameInput.value = '';
-                userNameInput.disabled = false;
-            }
-        }
-
-        // 获取评论
-        async function fetchComments() {
-            try {
-                const offset = (currentPage - 1) * commentsPerPage;
-                
-                // 获取所有评论，按指定字段排序
-                const comments = await pb.collection('comments').getList(
-                    currentPage,
-                    commentsPerPage,
-                    {
-                        sort: sortField,
-                        filter: 'parent_id = ""', // 只获取顶级评论
-                    }
-                );
-                
-                displayComments(comments.items);
-                updatePagination(comments.totalPages);
-            } catch (error) {
-                console.error('获取评论失败:', error);
-                commentsContainer.innerHTML = '<p>加载评论失败，请稍后再试。</p>';
-            }
-        }
-
-        // 获取评论回复
-        async function fetchReplies(parentId) {
-            try {
-                // 获取指定评论的所有回复
-                const replies = await pb.collection('comments').getFullList({
-                    sort: 'created',
-                    filter: `parent_id = "${parentId}"`,
-                });
-                
-                return replies;
-            } catch (error) {
-                console.error('获取回复失败:', error);
-                return [];
-            }
-        }
-
-        // 显示评论
-        async function displayComments(comments) {
-            commentsContainer.innerHTML = '';
-            
-            if (comments.length === 0) {
-                commentsContainer.innerHTML = '<p>暂无评论</p>';
-                return;
-            }
-            
-            for (const comment of comments) {
-                const div = document.createElement('div');
-                div.className = 'comment';
-                div.dataset.id = comment.id;
-                
-                // 获取评论回复
-                const replies = await fetchReplies(comment.id);
-                
-                div.innerHTML = `
-                    <div class="comment-header">
-                        <img src="${comment.user_avatar || 'https://picsum.photos/200'}" class="comment-avatar" alt="${comment.user_name}">
-                        <span class="comment-author">${comment.user_name}</span>
-                        <span class="comment-date">${new Date(comment.created).toLocaleString()}</span>
-                    </div>
-                    <div class="comment-body">${comment.content}</div>
-                    <button class="reply-button" data-id="${comment.id}">回复</button>
-                    <div class="comment-replies" id="replies-${comment.id}"></div>
-                `;
-                
-                commentsContainer.appendChild(div);
-                
-                // 显示回复
-                const repliesContainer = document.getElementById(`replies-${comment.id}`);
-                replies.forEach(reply => {
-                    const replyDiv = document.createElement('div');
-                    replyDiv.className = 'comment-reply';
-                    replyDiv.innerHTML = `
-                        <div class="comment-header">
-                            <img src="${reply.user_avatar || 'https://picsum.photos/200'}" class="comment-avatar" alt="${reply.user_name}">
-                            <span class="comment-author">${reply.user_name}</span>
-                            <span class="comment-date">${new Date(reply.created).toLocaleString()}</span>
-                        </div>
-                        <div class="comment-body">${reply.content}</div>
-                    `;
-                    repliesContainer.appendChild(replyDiv);
-                });
-            }
-            
-            // 添加回复按钮事件
-            document.querySelectorAll('.reply-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const commentId = e.target.dataset.id;
-                    const commentAuthor = e.target.parentElement.querySelector('.comment-author').textContent;
-                    
-                    // 设置回复目标
-                    replyToInput.value = commentId;
-                    commentTextInput.placeholder = `回复 ${commentAuthor}...`;
-                    commentTextInput.focus();
-                });
-            });
-        }
-
-        // 更新分页控件
-        function updatePagination(totalPages) {
-            paginationContainer.innerHTML = '';
-            
-            if (totalPages <= 1) return;
-            
-            // 首页
-            const firstButton = document.createElement('button');
-            firstButton.textContent = '首页';
-            firstButton.disabled = currentPage === 1;
-            firstButton.addEventListener('click', () => {
-                if (currentPage !== 1) {
-                    currentPage = 1;
-                    fetchComments();
-                }
-            });
-            paginationContainer.appendChild(firstButton);
-            
-            // 上一页
-            const prevButton = document.createElement('button');
-            prevButton.textContent = '上一页';
-            prevButton.disabled = currentPage === 1;
-            prevButton.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    fetchComments();
-                }
-            });
-            paginationContainer.appendChild(prevButton);
-            
-            // 页码按钮
-            const maxButtons = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-            let endPage = startPage + maxButtons - 1;
-            
-            if (endPage > totalPages) {
-                endPage = totalPages;
-                startPage = Math.max(1, endPage - maxButtons + 1);
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.className = i === currentPage ? 'active' : '';
-                pageButton.addEventListener('click', () => {
-                    currentPage = i;
-                    fetchComments();
-                });
-                paginationContainer.appendChild(pageButton);
-            }
-            
-            // 下一页
-            const nextButton = document.createElement('button');
-            nextButton.textContent = '下一页';
-            nextButton.disabled = currentPage === totalPages;
-            nextButton.addEventListener('click', () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    fetchComments();
-                }
-            });
-            paginationContainer.appendChild(nextButton);
-            
-            // 末页
-            const lastButton = document.createElement('button');
-            lastButton.textContent = '末页';
-            lastButton.disabled = currentPage === totalPages;
-            lastButton.addEventListener('click', () => {
-                if (currentPage !== totalPages) {
-                    currentPage = totalPages;
-                    fetchComments();
-                }
-            });
-            paginationContainer.appendChild(lastButton);
-        }
-
-        // 提交评论
-        async function submitComment() {
-            const content = commentTextInput.value.trim();
-            const parentId = replyToInput.value;
-            
-            if (!content) return;
-            
-            try {
-                let commentData = {
-                    content: content,
-                    parent_id: parentId
-                };
-                
-                // 如果用户已登录，使用用户信息
-                if (pb.authStore.isValid) {
-                    const user = pb.authStore.model;
-                    commentData.user_name = user.name;
-                    commentData.user_avatar = user.avatar;
-                } else {
-                    // 未登录用户使用输入的名称
-                    const userName = userNameInput.value.trim() || '匿名用户';
-                    commentData.user_name = userName;
-                    commentData.user_avatar = `https://picsum.photos/seed/${userName}/200`;
-                }
-                
-                // 创建新评论
-                const newComment = await pb.collection('comments').create(commentData);
-                
-                // 重置表单
-                commentTextInput.value = '';
-                replyToInput.value = '';
-                commentTextInput.placeholder = '写下你的评论...';
-                
-                // 重新加载评论
-                fetchComments();
-            } catch (error) {
-                console.error('提交评论失败:', error);
-                alert('提交评论失败，请稍后再试。');
-            }
-        }
-
-        // 用户登录
-        async function login() {
-            const email = loginEmail.value.trim();
-            const password = loginPassword.value;
-            
-            if (!email || !password) {
-                alert('请输入邮箱和密码');
-                return;
-            }
-            
-            try {
-                const authData = await pb.collection('users').authWithPassword(email, password);
-                console.log('登录成功:', authData);
-                loginModal.style.display = 'none';
-                checkAuth();
-                fetchComments(); // 刷新评论以显示用户身份
-            } catch (error) {
-                console.error('登录失败:', error);
-                alert('登录失败，请检查邮箱和密码');
-            }
-        }
-
-        // 用户注册
-        async function register() {
-            const email = registerEmail.value.trim();
-            const name = registerName.value.trim();
-            const password = registerPassword.value;
-            
-            if (!email || !password || !name) {
-                alert('请填写所有字段');
-                return;
-            }
-            
-            try {
-                // 创建用户
-                const newUser = await pb.collection('users').create({
-                    email: email,
-                    password: password,
-                    passwordConfirm: password,
-                    name: name
-                });
-                
-                // 验证邮箱（发送验证邮件）
-                await pb.collection('users').requestVerification(email);
-                
-                alert('注册成功，请查收验证邮件');
-                registerModal.style.display = 'none';
-            } catch (error) {
-                console.error('注册失败:', error);
-                alert('注册失败，请检查输入');
-            }
-        }
-
-        // 用户登出
-        function logout() {
-            pb.authStore.clear();
-            checkAuth();
-            fetchComments(); // 刷新评论以显示匿名状态
-        }
-
-        // 事件监听
-        submitButton.addEventListener('click', submitComment);
-        commentTextInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                submitComment();
-            }
-        });
-        
-        sortSelect.addEventListener('change', (e) => {
-            sortField = e.target.value;
-            currentPage = 1; // 重置到第一页
-            fetchComments();
-        });
-        
-        loginButton.addEventListener('click', () => {
-            loginModal.style.display = 'block';
-        });
-        
-        registerButton.addEventListener('click', () => {
-            registerModal.style.display = 'block';
-        });
-        
-        loginClose.addEventListener('click', () => {
-            loginModal.style.display = 'none';
-        });
-        
-        registerClose.addEventListener('click', () => {
-            registerModal.style.display = 'none';
-        });
-        
-        window.addEventListener('click', (e) => {
-            if (e.target === loginModal) {
-                loginModal.style.display = 'none';
-            }
-            if (e.target === registerModal) {
-                registerModal.style.display = 'none';
-            }
-        });
-        
-        doLoginButton.addEventListener('click', login);
-        doRegisterButton.addEventListener('click', register);
-        
-        // 添加登出功能
-        userInfoSpan.addEventListener('click', (e) => {
-            if (pb.authStore.isValid && e.target === userInfoSpan) {
-                if (confirm('确定要登出吗？')) {
-                    logout();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // 如果是在移动设备上点击导航链接，则关闭菜单
+                if (window.innerWidth < 768) {
+                    document.getElementById('mobile-menu').classList.add('translate-x-full');
                 }
-            }
+            });
         });
-
-        // 初始化
-        checkAuth();
-        fetchComments();
         
-        // 实时监听评论集合的变化
-        pb.collection('comments').subscribe('*', (e) => {
-            console.log('实时更新:', e);
-            fetchComments(); // 重新加载评论
+        // 留言表单提交 - 使用Firebase
+        document.getElementById('message-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const relationship = document.getElementById('relationship').value;
+            const messageText = document.getElementById('message-text').value;
+            
+            // 添加到Firestore
+            db.collection("messages").add({
+                name: name,
+                relationship: relationship,
+                message: messageText,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // 重置表单
+                document.getElementById('message-form').reset();
+                
+                // 显示成功提示
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slide-up z-50';
+                toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> 祝福已发送！';
+                document.body.appendChild(toast);
+                
+                // 创建庆祝效果
+                createCelebration();
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            })
+            .catch((error) => {
+                console.error("Error adding document: ", error);
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-6 right-6 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slide-up z-50';
+                toast.innerHTML = '<i class="fa-solid fa-exclamation-circle mr-2"></i> 发送失败，请重试';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            });
+        });
+        
+        // 实时获取留言
+        db.collection("messages")
+            .orderBy("timestamp", "desc")
+            .onSnapshot((querySnapshot) => {
+                const container = document.getElementById('messages-container');
+                container.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl shadow-lg p-8 text-center border-2 border-purple-200">
+                            <i class="fa-solid fa-comment-slash text-4xl text-purple-300 mb-4"></i>
+                            <p class="text-gray-600">还没有留言，成为第一个送上祝福的人吧！</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const date = data.timestamp ? data.timestamp.toDate() : new Date();
+                    
+                    // 格式化日期
+                    const timeString = formatDate(date);
+                    
+                    // 获取关系文本
+                    let relationshipText = '';
+                    switch(data.relationship) {
+                        case 'friend':
+                            relationshipText = '好朋友';
+                            break;
+                        case 'classmate':
+                            relationshipText = '同学';
+                            break;
+                        case 'family':
+                            relationshipText = '家人';
+                            break;
+                        default:
+                            relationshipText = '其他';
+                    }
+                    
+                    // 设置卡片颜色
+                    let cardColor = '';
+                    if (data.relationship === 'friend') {
+                        cardColor = 'border-pink-300';
+                    } else if (data.relationship === 'classmate') {
+                        cardColor = 'border-blue-300';
+                    } else if (data.relationship === 'family') {
+                        cardColor = 'border-purple-300';
+                    } else {
+                        cardColor = 'border-green-300';
+                    }
+                    
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `bg-white rounded-2xl shadow-lg p-6 transform hover:-translate-y-1 transition-all duration-300 animate-fade-in border-l-4 ${cardColor}`;
+                    messageElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-user text-purple-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark">${data.name}</h4>
+                                <p class="text-gray-500 text-sm">${relationshipText} · ${timeString}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">
+                            ${data.message}
+                        </p>
+                    `;
+                    
+                    container.appendChild(messageElement);
+                });
+            });
+        
+        // 格式化日期函数
+        function formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (seconds < 60) {
+                return '刚刚';
+            } else if (minutes < 60) {
+                return `${minutes}分钟前`;
+            } else if (hours < 24) {
+                return `${hours}小时前`;
+            } else if (days < 7) {
+                return `${days}天前`;
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
+        
+        // 创建庆祝效果
+        function createCelebration() {
+            // 创建五彩纸屑
+            for (let i = 0; i < 100; i++) {
+                createConfetti();
+            }
+            
+            // 播放音效
+            playCelebrationSound();
+        }
+        
+        // 创建五彩纸屑
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // 随机位置
+            const x = Math.random() * window.innerWidth;
+            const y = -20;
+            
+            // 随机颜色
+            const colors = ['#87CEEB', '#FFB6C1', '#98FB98', '#FF69B4', '#9370DB', '#FFD700'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 随机大小
+            const size = Math.random() * 10 + 5;
+            
+            // 随机动画时间
+            const duration = Math.random() * 3 + 2;
+            
+            // 设置样式
+            confetti.style.left = `${x}px`;
+            confetti.style.top = `${y}px`;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            confetti.style.backgroundColor = color;
+            confetti.style.animationDuration = `${duration}s`;
+            
+            // 添加到容器
+            document.body.appendChild(confetti);
+            
+            // 自动移除
+            setTimeout(() => {
+                confetti.remove();
+            }, duration * 1000);
+        }
+        
+        // 播放庆祝音效
+        function playCelebrationSound() {
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 440;
+                gainNode.gain.value = 0.1;
+                
+                oscillator.start();
+                
+                // 停止音效
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 300);
+            } catch (e) {
+                console.log("Web Audio API not supported", e);
+            }
+        }
+        
+        // 生日倒计时
+        function updateCountdown() {
+            // 设置下一个生日日期（2025年6月21日0点0分0秒）
+            const today = new Date();
+            const nextBirthday = new Date(2025, 5, 21, 0, 0, 0); // 月份是从0开始的，所以5代表6月
+            
+            const diffTime = nextBirthday - today;
+            
+            // 计算剩余天数、小时、分钟和秒
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+            
+            // 更新DOM
+            document.getElementById('days').innerText = days.toString().padStart(2, '0');
+            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+            
+            // 如果生日已过或今天是生日，显示生日快乐信息
+            if (diffTime <= 0) {
+                document.getElementById('days').innerText = '00';
+                document.getElementById('hours').innerText = '00';
+                document.getElementById('minutes').innerText = '00';
+                document.getElementById('seconds').innerText = '00';
+            }
+        }
+        
+        // 初始化倒计时并每秒更新
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化动画
+            const animateElements = document.querySelectorAll('.animate-fade-in, .animate-slide-up');
+            animateElements.forEach(el => {
+                el.style.opacity = '0';
+            });
+            
+            // 显示动画
+            setTimeout(() => {
+                animateElements.forEach(el => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                });
+            }, 100);
+            
+            // 初始创建一些五彩纸屑
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    createConfetti();
+                }, i * 100);
+            }
         });
     </script>
 </body>
