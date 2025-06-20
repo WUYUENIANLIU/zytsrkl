@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祝我的朋友17岁生日快乐！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#87CEEB',
+                        secondary: '#FFB6C1',
+                        accent: '#98FB98',
+                        dark: '#4A6FA5',
+                        light: '#F0F8FF'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        cursive: ['"Comic Sans MS"', '"Marker Felt"', 'cursive']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'fade-in': 'fadeIn 1.5s ease-in-out',
+                        'slide-up': 'slideUp 1s ease-out',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            }
+            .bg-gradient-blue {
+                background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 100%);
+            }
+            .bg-glass {
+                background: rgba(255, 255, 255, 0.25);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light min-h-screen overflow-x-hidden">
+    <!-- 顶部装饰 -->
+    <div class="fixed top-0 left-0 w-full h-16 bg-gradient-to-r from-primary/80 to-secondary/80 shadow-lg z-50 flex items-center justify-between px-6">
+        <div class="text-white text-2xl font-bold tracking-wider text-shadow">
+            <i class="fa-solid fa-birthday-cake mr-2"></i>17岁生日快乐
+        </div>
+        <div class="hidden md:flex space-x-4">
+            <a href="#home" class="text-white hover:text-secondary transition-colors duration-300 text-shadow">首页</a>
+            <a href="#wishes" class="text-white hover:text-secondary transition-colors duration-300 text-shadow">生日祝福</a>
+            <a href="#message" class="text-white hover:text-secondary transition-colors duration-300 text-shadow">留言板</a>
+        </div>
+        <button class="md:hidden text-white text-xl" id="menu-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="fixed inset-0 bg-dark/95 z-50 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex justify-end p-6">
+            <button id="menu-close" class="text-white text-2xl">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="flex flex-col items-center justify-center h-full space-y-8 text-xl">
+            <a href="#home" class="text-white hover:text-secondary transition-colors duration-300 text-shadow-lg text-2xl">首页</a>
+            <a href="#wishes" class="text-white hover:text-secondary transition-colors duration-300 text-shadow-lg text-2xl">生日祝福</a>
+            <a href="#message" class="text-white hover:text-secondary transition-colors duration-300 text-shadow-lg text-2xl">留言板</a>
+        </div>
+    </div>
+
+    <!-- 气球装饰 -->
+    <div class="fixed -top-10 -left-10 w-20 h-20 bg-primary rounded-full opacity-70 animate-float shadow-lg"></div>
+    <div class="fixed -top-5 -right-10 w-16 h-16 bg-secondary rounded-full opacity-70 animate-float" style="animation-delay: 0.5s"></div>
+    <div class="fixed top-20 -right-5 w-12 h-12 bg-accent rounded-full opacity-70 animate-float" style="animation-delay: 1s"></div>
+    <div class="fixed top-32 -left-8 w-14 h-14 bg-dark rounded-full opacity-70 animate-float" style="animation-delay: 1.5s"></div>
+
+    <!-- 主要内容 -->
+    <main class="pt-24 pb-16">
+        <!-- 欢迎部分 -->
+        <section id="home" class="min-h-[80vh] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1068/1920/1080')] bg-cover bg-center opacity-20"></div>
+            <div class="relative z-10 text-center">
+                <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold text-dark mb-6 animate-fade-in text-shadow-lg">
+                    <span class="text-primary">生日快乐</span>，<span class="text-secondary">我的朋友</span>！
+                </h1>
+                <p class="text-[clamp(1.2rem,3vw,1.8rem)] text-gray-700 max-w-3xl mx-auto mb-10 animate-slide-up">
+                    今天是你17岁的生日！🎉 愿你的每一天都充满阳光和欢笑，
+                    所有的梦想都能成真，所有的希望都能实现！
+                </p>
+                <div class="animate-bounce-slow">
+                    <a href="#wishes" class="inline-block bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">
+                        查看生日祝福 <i class="fa-solid fa-heart ml-2 text-secondary"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-light to-transparent"></div>
+        </section>
+
+        <!-- 祝福部分 -->
+        <section id="wishes" class="py-20 px-6 bg-gradient-blue">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-dark mb-12 text-center">
+                    <i class="fa-solid fa-star text-secondary animate-pulse-slow"></i> 生日祝福 <i class="fa-solid fa-star text-secondary animate-pulse-slow"></i>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 祝福卡片1 -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="h-40 bg-primary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-cake-candles text-6xl text-primary group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-3">青春永驻</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                17岁，如花般的年纪，愿你的青春永远美丽动人，充满活力和激情。
+                                未来的日子里，无论遇到什么困难，都要保持乐观向上的心态！
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 祝福卡片2 -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="h-40 bg-secondary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-gift text-6xl text-secondary group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-3">梦想成真</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                愿你的17岁充满无限可能，所有的梦想都能在这个年纪种下种子，
+                                并在未来的日子里茁壮成长。坚持自己的理想，你一定能实现它们！
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 祝福卡片3 -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="h-40 bg-accent/20 flex items-center justify-center">
+                            <i class="fa-solid fa-heart text-6xl text-accent group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-3">幸福快乐</h3>
+                            <p class="text-gray-700 leading-relaxed">
+                                希望你的每一天都充满阳光和欢笑，身边永远有真心关爱你的朋友和家人。
+                                17岁，是人生中最美好的时光，尽情享受吧！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-16 bg-glass rounded-3xl p-8 shadow-xl">
+                    <h3 class="text-2xl font-bold text-dark mb-6 text-center">特别的你，特别的祝福</h3>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                        亲爱的朋友，今天是你17岁的生日。时间过得真快，仿佛昨天我们还在校园里一起追逐嬉戏，
+                        转眼间你已经步入了这个充满挑战和机遇的年纪。
+                    </p>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                        17岁，是青春的绽放，是梦想的启航。在这个特别的日子里，我想对你说：
+                        无论未来的路有多远，无论遇到什么困难，我都会一直在你身边支持你。
+                    </p>
+                    <p class="text-lg text-gray-700 leading-relaxed">
+                        愿你的17岁充满无限的可能和惊喜，愿你的笑容永远灿烂，
+                        愿你的生活充满阳光和爱。生日快乐，我最亲爱的朋友！🎂🎁🎉
+                    </p>
+                    <div class="mt-8 text-right">
+                        <p class="font-bold text-dark">永远支持你的朋友</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+                
+                <div class="mt-12 text-center">
+                    <p class="text-gray-700 mb-6">这些都是我们一起度过的美好时光，希望未来还有更多精彩的回忆！</p>
+                    <button class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">
+                        <i class="fa-solid fa-plus mr-2"></i> 查看更多回忆
+                    </button>
+                </div>
+           
+
+        <!-- 留言板部分 -->
+        <section id="message" class="py-20 px-6 bg-gradient-blue">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-dark mb-12 text-center">
+                    <i class="fa-solid fa-comments text-secondary animate-pulse-slow"></i> 留言板 <i class="fa-solid fa-comments text-secondary animate-pulse-slow"></i>
+                </h2>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-12">
+                    <h3 class="text-xl font-bold text-dark mb-6">留下你的祝福</h3>
+                    <form id="message-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-gray-700 font-medium mb-2">你的名字</label>
+                                <input type="text" id="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" placeholder="请输入你的名字" required>
+                            </div>
+                            <div>
+                                <label for="relationship" class="block text-gray-700 font-medium mb-2">你们的关系</label>
+                                <select id="relationship" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" required>
+                                    <option value="">请选择</option>
+                                    <option value="friend">好朋友</option>
+                                    <option value="classmate">同学</option>
+                                    <option value="family">家人</option>
+                                    <option value="other">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="message" class="block text-gray-700 font-medium mb-2">生日祝福</label>
+                            <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300" placeholder="写下你对TA的生日祝福..." required></textarea>
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> 发送祝福
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="messages-container" class="space-y-6">
+                    
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">17岁生日快乐</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        这是一个专门为你创建的生日祝福网站，希望你能喜欢！
+                        愿你的17岁充满无限的可能和惊喜！
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">生日倒计时</h3>
+                    <div id="countdown" class="flex space-x-4">
+                        <div class="bg-primary/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="days">00</div>
+                            <div class="text-sm">天</div>
+                        </div>
+                        <div class="bg-primary/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="hours">00</div>
+                            <div class="text-sm">时</div>
+                        </div>
+                        <div class="bg-primary/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="minutes">00</div>
+                            <div class="text-sm">分</div>
+                        </div>
+                        <div class="bg-primary/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="seconds">00</div>
+                            <div class="text-sm">秒</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">分享祝福</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-brands fa-weixin text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-brands fa-weibo text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-brands fa-qq text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-solid fa-envelope text-white"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-gray-400">
+                <p>© 2025 生日祝福网站 | 为你特别定制</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 烟花效果 -->
+    <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-40"></div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('translate-x-full');
+        });
+        
+        document.getElementById('menu-close').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.add('translate-x-full');
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // 如果是在移动设备上点击导航链接，则关闭菜单
+                if (window.innerWidth < 768) {
+                    document.getElementById('mobile-menu').classList.add('translate-x-full');
+                }
+            });
+        });
+        
+        // 留言表单提交
+        document.getElementById('message-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const relationship = document.getElementById('relationship').value;
+            const message = document.getElementById('message').value;
+            
+            // 创建新留言元素
+            const newMessage = document.createElement('div');
+            newMessage.className = 'bg-white rounded-2xl shadow-lg p-6 transform hover:-translate-y-1 transition-all duration-300 animate-fade-in';
+            
+            // 获取关系文本
+            let relationshipText = '';
+            switch(relationship) {
+                case 'friend':
+                    relationshipText = '好朋友';
+                    break;
+                case 'classmate':
+                    relationshipText = '同学';
+                    break;
+                case 'family':
+                    relationshipText = '家人';
+                    break;
+                default:
+                    relationshipText = '其他';
+            }
+            
+            // 设置留言内容
+            newMessage.innerHTML = `
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
+                        <i class="fa-solid fa-user text-primary"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-dark">${name}</h4>
+                        <p class="text-gray-500 text-sm">${relationshipText} · 刚刚</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 leading-relaxed">
+                    ${message}
+                </p>
+            `;
+            
+            // 添加到留言容器顶部
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.insertBefore(newMessage, messagesContainer.firstChild);
+            
+            // 重置表单
+            this.reset();
+            
+            // 显示成功提示
+            alert('祝福已发送！');
+        });
+        
+        // 烟花效果
+        function createFirework() {
+            const fireworksContainer = document.getElementById('fireworks-container');
+            const firework = document.createElement('div');
+            
+            // 随机位置
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            
+            // 随机颜色
+            const colors = ['#87CEEB', '#FFB6C1', '#98FB98', '#FFA07A', '#DDA0DD'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 设置样式
+            firework.className = 'absolute';
+            firework.style.left = `${x}%`;
+            firework.style.top = `${y}%`;
+            firework.style.width = '6px';
+            firework.style.height = '6px';
+            firework.style.borderRadius = '50%';
+            firework.style.backgroundColor = color;
+            firework.style.boxShadow = `0 0 20px 10px ${color}80`;
+            firework.style.animation = `fadeIn 0.5s ease-out forwards, fadeOut 0.5s ease-in 1s forwards`;
+            
+            // 添加到容器
+            fireworksContainer.appendChild(firework);
+            
+            // 自动移除
+            setTimeout(() => {
+                firework.remove();
+            }, 2000);
+        }
+        
+        // 定时创建烟花
+        setInterval(createFirework, 1000);
+        
+        // 生日倒计时
+        function updateCountdown() {
+            // 设置下一个生日日期（2025年6月21日0点0分0秒）
+            const today = new Date();
+            const nextBirthday = new Date(2025, 5, 21, 0, 0, 0); // 月份是从0开始的，所以5代表6月
+            
+            const diffTime = nextBirthday - today;
+            
+            // 计算剩余天数、小时、分钟和秒
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+            
+            // 更新DOM
+            document.getElementById('days').innerText = days.toString().padStart(2, '0');
+            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+            
+            // 如果生日已过或今天是生日，显示生日快乐信息
+            if (diffTime <= 0) {
+                document.getElementById('days').innerText = '00';
+                document.getElementById('hours').innerText = '00';
+                document.getElementById('minutes').innerText = '00';
+                document.getElementById('seconds').innerText = '00';
+            }
+        }
+        
+        // 初始化倒计时并每秒更新
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化动画
+            const animateElements = document.querySelectorAll('.animate-fade-in, .animate-slide-up');
+            animateElements.forEach(el => {
+                el.style.opacity = '0';
+            });
+            
+            // 显示动画
+            setTimeout(() => {
+                animateElements.forEach(el => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+    
