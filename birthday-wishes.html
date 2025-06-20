@@ -6,7 +6,26 @@
     <title>祝我的朋友17岁生日快乐！</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- 引入Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script>
+    
     <script>
+        // Firebase配置 - 替换为您的实际配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9LbJ0FyH0f0fV3J4Xz5V3X0fV3J4Xz5V3",
+            authDomain: "birthday-wishes-12345.firebaseapp.com",
+            projectId: "birthday-wishes-12345",
+            storageBucket: "birthday-wishes-12345.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890abcdef"
+        };
+        
+        // 初始化Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
         tailwind.config = {
             theme: {
                 extend: {
@@ -202,8 +221,7 @@
                     </p>
                     <div class="mt-8 text-right">
                         <p class="font-bold text-dark">永远支持你的朋友</p>
-              
-                    </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -247,8 +265,11 @@
                 </div>
                 
                 <div id="messages-container" class="space-y-6">
-                  
-                        </p>
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin-slow text-primary text-4xl mb-4">
+                            <i class="fa-solid fa-spinner"></i>
+                        </div>
+                        <p class="text-gray-600">正在加载留言...</p>
                     </div>
                 </div>
             </div>
@@ -339,68 +360,123 @@
             });
         });
         
-        // 留言表单提交 - 修复版本
+        // 留言表单提交 - 使用Firebase
         document.getElementById('message-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const name = document.getElementById('name').value;
             const relationship = document.getElementById('relationship').value;
-            // 修复：将变量名从message改为messageText避免冲突
             const messageText = document.getElementById('message-text').value;
             
-            // 创建新留言元素
-            const newMessage = document.createElement('div');
-            newMessage.className = 'bg-white rounded-2xl shadow-lg p-6 transform hover:-translate-y-1 transition-all duration-300 animate-fade-in';
-            
-            // 获取关系文本
-            let relationshipText = '';
-            switch(relationship) {
-                case 'friend':
-                    relationshipText = '好朋友';
-                    break;
-                case 'classmate':
-                    relationshipText = '同学';
-                    break;
-                case 'family':
-                    relationshipText = '家人';
-                    break;
-                default:
-                    relationshipText = '其他';
-            }
-            
-            // 设置留言内容 - 使用正确的变量messageText
-            newMessage.innerHTML = `
-                <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
-                        <i class="fa-solid fa-user text-primary"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-dark">${name}</h4>
-                        <p class="text-gray-500 text-sm">${relationshipText} · 刚刚</p>
-                    </div>
-                </div>
-                <p class="text-gray-700 leading-relaxed">
-                    ${messageText}
-                </p>
-            `;
-            
-            // 添加到留言容器顶部
-            const messagesContainer = document.getElementById('messages-container');
-            messagesContainer.insertBefore(newMessage, messagesContainer.firstChild);
-            
-            // 重置表单
-            this.reset();
-            
-            // 显示成功提示
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slide-up z-50';
-            toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> 祝福已发送！';
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            // 添加到Firestore
+            db.collection("messages").add({
+                name: name,
+                relationship: relationship,
+                message: messageText,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // 重置表单
+                document.getElementById('message-form').reset();
+                
+                // 显示成功提示
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slide-up z-50';
+                toast.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i> 祝福已发送！';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            })
+            .catch((error) => {
+                console.error("Error adding document: ", error);
+                alert("发送失败，请重试");
+            });
         });
+        
+        // 实时获取留言
+        db.collection("messages")
+            .orderBy("timestamp", "desc")
+            .onSnapshot((querySnapshot) => {
+                const container = document.getElementById('messages-container');
+                container.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+                            <i class="fa-solid fa-comment-slash text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-600">还没有留言，成为第一个送上祝福的人吧！</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const date = data.timestamp ? data.timestamp.toDate() : new Date();
+                    
+                    // 格式化日期
+                    const timeString = formatDate(date);
+                    
+                    // 获取关系文本
+                    let relationshipText = '';
+                    switch(data.relationship) {
+                        case 'friend':
+                            relationshipText = '好朋友';
+                            break;
+                        case 'classmate':
+                            relationshipText = '同学';
+                            break;
+                        case 'family':
+                            relationshipText = '家人';
+                            break;
+                        default:
+                            relationshipText = '其他';
+                    }
+                    
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'bg-white rounded-2xl shadow-lg p-6 transform hover:-translate-y-1 transition-all duration-300 animate-fade-in';
+                    messageElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-user text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark">${data.name}</h4>
+                                <p class="text-gray-500 text-sm">${relationshipText} · ${timeString}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">
+                            ${data.message}
+                        </p>
+                    `;
+                    
+                    container.appendChild(messageElement);
+                });
+            });
+        
+        // 格式化日期函数
+        function formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (seconds < 60) {
+                return '刚刚';
+            } else if (minutes < 60) {
+                return `${minutes}分钟前`;
+            } else if (hours < 24) {
+                return `${hours}小时前`;
+            } else if (days < 7) {
+                return `${days}天前`;
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
         
         // 烟花效果
         function createFirework() {
@@ -439,33 +515,33 @@
         setInterval(createFirework, 1000);
         
         // 生日倒计时
-function updateCountdown() {
-    // 设置下一个生日日期（2025年6月21日0点0分0秒）
-    const today = new Date();
-    const nextBirthday = new Date(2025, 5, 21, 0, 0, 0); // 月份是从0开始的，所以5代表6月
-    
-    const diffTime = nextBirthday - today;
-    
-    // 计算剩余天数、小时、分钟和秒
-    const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
-    
-    // 更新DOM
-    document.getElementById('days').innerText = days.toString().padStart(2, '0');
-    document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
-    document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
-    document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
-    
-    // 如果生日已过或今天是生日，显示生日快乐信息
-    if (diffTime <= 0) {
-        document.getElementById('days').innerText = '00';
-        document.getElementById('hours').innerText = '00';
-        document.getElementById('minutes').innerText = '00';
-        document.getElementById('seconds').innerText = '00';
-    }
-}
+        function updateCountdown() {
+            // 设置下一个生日日期（2025年6月21日0点0分0秒）
+            const today = new Date();
+            const nextBirthday = new Date(2025, 5, 21, 0, 0, 0); // 月份是从0开始的，所以5代表6月
+            
+            const diffTime = nextBirthday - today;
+            
+            // 计算剩余天数、小时、分钟和秒
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+            
+            // 更新DOM
+            document.getElementById('days').innerText = days.toString().padStart(2, '0');
+            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+            
+            // 如果生日已过或今天是生日，显示生日快乐信息
+            if (diffTime <= 0) {
+                document.getElementById('days').innerText = '00';
+                document.getElementById('hours').innerText = '00';
+                document.getElementById('minutes').innerText = '00';
+                document.getElementById('seconds').innerText = '00';
+            }
+        }
         
         // 初始化倒计时并每秒更新
         updateCountdown();
